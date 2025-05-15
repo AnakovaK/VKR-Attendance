@@ -61,22 +61,20 @@ internal class BackgroundGroupActualizeJob : IJob, IDisposable
         // Если не находится в нашей БД => это новичок
         foreach (var student in actualizedVisitingLog.NsiStudents)
         {
-            var correctStudentRole = student.NsiStudentId == actualizedVisitingLogElderId ? StudentMembershipRole.Elder : StudentMembershipRole.Student;
+            var correctStudentRole = student.Id == actualizedVisitingLogElderId ? StudentMembershipRole.Elder : StudentMembershipRole.Student;
 
             if (student.PersonalNumber == "20И1302" || student.PersonalNumber == "21И1138")
             {
                 correctStudentRole = StudentMembershipRole.Elder;
             }
 
-            await CreateHumanAndStudentIfNotExists(student, context.CancellationToken);
-
-            var targetMembership = currentVisitingLog.StudentMemberships.SingleOrDefault(m => m.NsiStudentId == student.NsiStudentId.AsGuid());
+            var targetMembership = currentVisitingLog.StudentMemberships.SingleOrDefault(m => m.NsiStudentId == student.Id);
 
             if (targetMembership is null)
             {
                 var newStudentMembership = new StudentMembership
                 {
-                    NsiStudentId = student.NsiStudentId.AsGuid(),
+                    NsiStudentId = student.Id,
                     VisitingLogId = currentVisitingLog.Id,
                     MembershipType = StudentMembershipType.Active,
                     MembershipRole = correctStudentRole
@@ -101,7 +99,7 @@ internal class BackgroundGroupActualizeJob : IJob, IDisposable
         // Если не находится actualized group => Уволен из группы
         foreach (var inactiveStudentMembership in currentVisitingLog.StudentMemberships
             .Where(s => s.MembershipType != StudentMembershipType.Inactive)
-            .ExceptBy(actualizedVisitingLog.NsiStudents.Select(s => s.NsiStudentId.AsGuid()), s => s.NsiStudentId))
+            .ExceptBy(actualizedVisitingLog.NsiStudents.Select(s => s.Id), s => s.NsiStudentId))
         {
             var updatedStudent = new StudentMembership
             {
@@ -123,33 +121,6 @@ internal class BackgroundGroupActualizeJob : IJob, IDisposable
         }
     }
 
-    private async Task CreateHumanAndStudentIfNotExists(RtuTc.TandemSchedule.NsiStudent student, CancellationToken cancellationToken)
-    {
-        // TODO: использовать кеш для существующих сущностей
-        var nsiHumanExists = await _nsiHumanRep.AnyAsync(new GetNsiHumanForTandemSpec(student.Human.NsiHumanId.AsGuid()), cancellationToken);
-        if (!nsiHumanExists)
-        {
-            var newHuman = new NsiHuman
-            {
-                Id = student.Human.NsiHumanId.AsGuid(),
-                Lastname = student.Human.LastName,
-                Firstname = student.Human.FirstName,
-                Middlename = student.Human.MiddleName,
-            };
-            _attendDbContext.NsiHumans.Add(newHuman);
-        }
-        var nsiStudentExists = await _nsiStudentRep.AnyAsync(new GetNsiStudentForTandemSpec(student.NsiStudentId.AsGuid()), cancellationToken);
-        if (!nsiStudentExists)
-        {
-            var newNsiStudent = new NsiStudent
-            {
-                Id = student.NsiStudentId.AsGuid(),
-                NsiHumanId = student.Human.NsiHumanId.AsGuid(),
-                PersonalNumber = student.PersonalNumber,
-            };
-            _attendDbContext.NsiStudents.Add(newNsiStudent);
-        }
-    }
 
     public void Dispose()
     {

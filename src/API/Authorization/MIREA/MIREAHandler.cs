@@ -8,7 +8,6 @@ using System.Text.Json.Nodes;
 using System.Text.Json;
 using AttendDatabase;
 using Microsoft.EntityFrameworkCore;
-using RtuTc.TandemSchedule;
 using RTUAttendAPI.API.Services.Initialization;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -79,7 +78,6 @@ public class MIREAHandler : OAuthHandler<MIREAOptions>
         var humanInfo = await _humanInfoService.GetHumanLoginInfoByLogin(uidFromLogin, Context.RequestAborted);
 
         userInfo.Remove("uid");
-        userInfo.Add("uid", JsonNode.Parse($"\"{humanInfo.HumanId}\""));
 
         using var jsonDoc = JsonDocument.Parse(userInfo.ToJsonString());
 
@@ -88,7 +86,7 @@ public class MIREAHandler : OAuthHandler<MIREAOptions>
 
         context.RunClaimActions();
 
-        if (humanInfo.IsTeacher)
+        if (humanInfo.Teachers.Any())
         {
             identity.AddClaim(new Claim("role", "teacher", null, "attendance"));
         }
