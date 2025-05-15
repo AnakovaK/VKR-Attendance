@@ -1,0 +1,97 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  VERSION: 1.0.0+$CI_PIPELINE_IID
+  GIT_SUBMODULE_STRATEGY: recursive
+run-test:
+  image: mcr.microsoft.com/dotnet/sdk:7.0
+  stage: test
+  tags:
+    - docker
+  services:
+    - name: docker:dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  script:
+    - dotnet test --logger:junit --collect:"XPlat Code Coverage" RTU-Attend.sln
+  artifacts:
+    when: always
+    paths:
+      - tests/*/TestResults/**/*.xml
+    reports:
+      junit:
+        - tests/*/TestResults/TestResults.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: tests/*/TestResults/**/coverage.cobertura.xml
+docker-build:
+  image: docker:latest
+  stage: build
+  needs:
+    - run-test
+  services:
+    - docker:dind
+  tags:
+    - docker
+  variables:
+    IMAGE_CONCRETE: $CI_REGISTRY_IMAGE/api:$CI_PIPELINE_IID
+    IMAGE_LATEST: $CI_REGISTRY_IMAGE/api:latest
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE_CONCRETE --file src/API/Dockerfile --build-arg VERSION=$VERSION --build-arg SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN .
+    - docker push $IMAGE_CONCRETE
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+          docker tag $IMAGE_CONCRETE $IMAGE_LATEST
+          docker push $IMAGE_LATEST
+      fi
+setup-sentry-release:
+  stage: deploy
+  image: getsentry/sentry-cli
+  tags:
+    - docker
+  variables:
+    SENTRY_AUTH_TOKEN: $SENTRY_AUTH_TOKEN
+    SENTRY_ORG: $SENTRY_ORG
+    SENTRY_URL: $SENTRY_URL
+  script:
+    - sentry-cli releases new -p backend $VERSION
+    - sentry-cli releases set-commits --auto $VERSION
+  only:
+    variables:
+      - $CI_DEFAULT_BRANCH == $CI_COMMIT_REF_NAME
+
+update-service:
+  stage: deploy
+  image: kroniak/ssh-client
+  tags:
+    - docker
+  needs:
+    - docker-build
+    - setup-sentry-release
+  variables:
+    IMAGE_CONCRETE: $CI_REGISTRY_IMAGE/api:$CI_PIPELINE_IID
+    GIT_STRATEGY: none
+  before_script:
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - cat "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+  script:
+    - command="docker service update --image $IMAGE_CONCRETE $SERVICE_NAME --with-registry-auth"
+    - echo "$command"
+    - ssh $SSH_USER@$DEPLOY_SSH_HOST -p $SSH_PORT "$command"
+    - command="[[ \"\$(docker service ps $SERVICE_NAME --format {{.Image}} --filter desired-state=running | head -n 1)\" == \"$IMAGE_CONCRETE\" ]]"
+    - ssh $SSH_USER@$DEPLOY_SSH_HOST -p $SSH_PORT "$command"
+  only:
+    variables:
+      - $CI_DEFAULT_BRANCH == $CI_COMMIT_REF_NAME
+

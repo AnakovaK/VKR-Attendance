@@ -1,0 +1,10 @@
+version: '3.8'
+
+
+
+services:
+  rtu-attend-api:
+    image: registry.gitlab.com/rtu-tc/rtu-attend/backend/api
+
+
+

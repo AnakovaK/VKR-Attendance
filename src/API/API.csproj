@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <DockerfileContext>..\..</DockerfileContext>
+        <DockerComposeProjectPath>..\..\docker-compose.dcproj</DockerComposeProjectPath>
+        <IsWebConfigTransformDisabled>true</IsWebConfigTransformDisabled>
+        <RootNamespace>RTUAttendAPI.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+        <UserSecretsId>970faa08-4593-4519-895d-ffbe09339718</UserSecretsId>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <SentryUrl>https://sentry.rtu-tc.ru/</SentryUrl>
+        <SentryOrg>rtu-attendance</SentryOrg>
+        <SentryProject>backend</SentryProject>
+        <SentryUploadSymbols>true</SentryUploadSymbols>
+        <SentryUploadSources>true</SentryUploadSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Ardalis.Specification" Version="7.0.0" />
+        <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="7.0.0" />
+        <PackageReference Include="Bogus" Version="34.0.2" />
+        <PackageReference Include="Grpc.AspNetCore" Version="2.56.0" />
+        <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.56.0" />
+        <PackageReference Include="Grpc.AspNetCore.Web" Version="2.56.0" />
+        <PackageReference Include="Ical.Net" Version="4.2.0" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="7.0.10" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.10">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.10" />
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+        <PackageReference Include="OneOf" Version="3.0.255" />
+        <PackageReference Include="Quartz" Version="3.7.0" />
+        <PackageReference Include="Quartz.AspNetCore" Version="3.7.0" />
+        <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.7.0" />
+        <PackageReference Include="Quartz.Serialization.Json" Version="3.7.0" />
+        <PackageReference Include="Sentry.AspNetCore" Version="3.36.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\AttendDatabase\AttendDatabase.csproj" />
+        <ProjectReference Include="..\Proto\Proto.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Proto\Proto.csproj" />
+    </ItemGroup>
+
+</Project>

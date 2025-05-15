@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.app;
+
+import "models.proto";
+
+service AdminService {
+    rpc GetStudentMembershipIdByVisitingLogIdStudentId(GetStudentMembershipIdByVisitingLogIdStudentIdRequest) returns (GetStudentMembershipIdByVisitingLogIdStudentIdResponse);
+    
+    rpc UpdateStudentMembershipRole(UpdateStudentMembershipRoleRequest) returns (UpdateStudentMembershipRoleResponse);
+
+    rpc TriggerGetAllAcademicGroups(TriggerGetAllAcademicGroupsRequest) returns (TriggerGetAllAcademicGroupsResponse);
+}
+
+message UpdateStudentMembershipRoleRequest {
+    string studentMembershipId = 1;
+    rtu_tc.rtu_attend.models.StudentMembershipRole newRole = 2;
+}
+
+message UpdateStudentMembershipRoleResponse {
+    // Вероятно, временно пустое
+}
+
+message GetStudentMembershipIdByVisitingLogIdStudentIdRequest {
+    string studentId = 1;
+    string visitingLogId = 2;
+}
+
+message GetStudentMembershipIdByVisitingLogIdStudentIdResponse {
+    string studentMembershipId = 1;
+}
+
+message TriggerGetAllAcademicGroupsRequest {
+
+}
+
+message TriggerGetAllAcademicGroupsResponse {
+
+}

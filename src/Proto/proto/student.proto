@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.app;
+
+import "models.proto";
+
+service StudentService {
+    rpc SelfApproveAttendance(SelfApproveAttendanceRequest) returns (SelfApproveAttendanceResponse);
+}
+
+message SelfApproveAttendanceRequest {
+    string token = 1;
+}
+message SelfApproveAttendanceResponse {
+    oneof response {
+        NotYetApprovedResponse notYet = 1;
+        rtu_tc.rtu_attend.models.LessonView approved = 2;
+    }
+}
+
+message NotYetApprovedResponse {
+    NotYetApprovedReason reason = 1;
+}
+
+enum NotYetApprovedReason {
+    NOT_YET_APPROVED_REASON_UNKNOWN = 0;
+    NOT_YET_APPROVED_REASON_INCORRECT_TOKEN = 1; // неверный токен, возможно "протух"
+    NOT_YET_APPROVED_REASON_WAITING = 2; // ожидание подтверждения
+    NOT_YET_APPROVED_REASON_NO_LINK_TO_LESSON = 3; // человек не привязан к занятию как студент
+}
+

@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.app;
+
+import "google/protobuf/wrappers.proto";
+
+service UserService {
+    rpc GetMeInfo(GetMeInfoRequest) returns(GetMeInfoResponse);
+}
+
+message GetMeInfoRequest {
+    string appUrl = 1; // Адрес, на который будет перенаправлен пользователь после входа/выхода в/из акуанта
+}
+
+message GetMeInfoResponse {
+    oneof result {
+        AuthorizedInfo authorized = 1;
+        NotAuthorizedInfo notAuthorized = 2;
+    }
+}
+
+message AuthorizedInfo {
+    UserInfo user = 1;
+    string logoutUrl = 2;
+}
+
+message UserInfo {
+    string userId = 1;
+    string firstname = 2;
+    string lastname = 3;
+    google.protobuf.StringValue middlename = 4;
+    repeated Claim claims = 5;
+}
+
+message Claim {
+    string Type = 1;
+    string Value = 2;
+}
+
+message NotAuthorizedInfo {
+    string loginUrl = 1;
+}

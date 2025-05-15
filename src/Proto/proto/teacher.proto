@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.app;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/date.proto";
+import "models.proto";
+
+service TeacherService {
+    rpc GetAllSemesters(GetAllSemestersRequest) returns (GetAllSemestersResponse);
+    rpc GetAllVisitingLogs(GetAllVisitingLogsRequest) returns (GetAllVisitingLogsResponse);
+    rpc GetVisitingLogById(GetVisitingLogByIdRequest) returns (GetVisitingLogByIdResponse);
+    rpc GetStudentMembershipsOfVisitingLogById(GetStudentMembershipsOfVisitingLogByIdRequest) returns (GetStudentMembershipsOfVisitingLogByIdResponse);
+
+    rpc GetMyLessonsForDate(GetMyLessonsForDateRequest) returns (GetMyLessonsForDateResponse);
+    rpc GetAttendancesForTeacher(GetAttendancesForTeacherRequest) returns (GetAttendancesForTeacherResponse);
+
+    rpc ApproveLessonAttendances(ApproveLessonAttendancesRequest) returns (ApproveLessonAttendancesResponse);
+
+    rpc GetStudentSelfApproveLink(GetStudentSelfApproveLinkRequest) returns (stream GetStudentSelfApproveLinkResponse);
+
+    rpc SearchLesson(SearchLessonRequest) returns (SearchLessonResponse);
+    rpc AssignSelfToLesson(AssignSelfToLessonRequest) returns (AssignSelfToLessonResponse);
+    rpc UnassignSelfFromLesson(UnassignSelfFromLessonRequest) returns (UnassignSelfFromLessonResponse);
+
+}
+
+message AssignSelfToLessonRequest {
+    string lessonId = 1;
+}
+message AssignSelfToLessonResponse {
+    AssignSelfToLessonStatus status = 1;
+}
+
+enum AssignSelfToLessonStatus {
+    ASSIGN_SELF_TO_LESSON_STATUS_UNKNOWN = 0;
+    ASSIGN_SELF_TO_LESSON_STATUS_ALREADY_ASSIGNED = 1;
+    ASSIGN_SELF_TO_LESSON_STATUS_OK = 2;
+}
+
+message UnassignSelfFromLessonRequest {
+    string lessonId = 1;
+}
+
+message UnassignSelfFromLessonResponse {
+    UnassignSelfFromLessonStatus status = 1;
+}
+
+enum UnassignSelfFromLessonStatus {
+    UNASSIGN_SELF_FROM_LESSON_STATUS_UNKNOWN = 0;
+    UNASSIGN_SELF_FROM_LESSON_STATUS_WAS_NOT_ASSIGNED = 1;
+    UNASSIGN_SELF_FROM_LESSON_STATUS_OK = 2;
+}
+
+message SearchLessonResponse {
+    repeated rtu_tc.rtu_attend.models.LessonView lessons = 1;
+}
+
+message SearchLessonRequest {
+    google.type.Date date = 1;
+    string match = 2; // поиск по группе/дисциплине/аудитории
+}
+
+message GetStudentSelfApproveLinkRequest {
+    string lessonId = 1;
+}
+message GetStudentSelfApproveLinkResponse {
+    string link = 1;
+    int32 studentsPresentCount = 2;
+    int32 studentsTotalCount = 3;
+}
+
+message ApproveLessonAttendancesRequest {
+    string lessonId = 1;
+}
+
+message ApproveLessonAttendancesResponse {
+    // TODO: пока пустой, на скорую руку
+}
+
+message GetAttendancesForTeacherRequest {
+    string lessonId = 1;
+}
+
+message GetAttendancesForTeacherResponse {
+    repeated AttendancesForVisitingLog attendancesForLogs = 1;
+    rtu_tc.rtu_attend.models.LessonView lesson = 2;
+}
+
+message AttendancesForVisitingLog {
+    VisitingLogCompactInfo visitingLog = 1;
+    repeated rtu_tc.rtu_attend.models.AttendanceForLesson attendances = 2;
+}
+
+message VisitingLogCompactInfo {
+    string id = 1;
+    string title = 2;
+}
+
+message GetMyLessonsForDateRequest {
+    google.type.Date date = 1;
+}
+message GetMyLessonsForDateResponse {
+    repeated rtu_tc.rtu_attend.models.LessonView lessons = 1;
+}
+
+
+message GetAllSemestersRequest {
+
+}
+
+message GetAllSemestersResponse {
+    repeated Semesters semesters = 1;
+}
+
+message Semesters {
+    string id = 1;
+    string title = 2;
+    google.protobuf.Timestamp start = 3;
+    google.protobuf.Timestamp end = 4;
+}
+
+message VisitingLogs {
+    string id = 1;
+    string title = 2;
+    int32 studentsCount = 3;
+    bool isActive = 4;
+}
+
+message GetAllVisitingLogsRequest {
+    string semesterId = 1;
+}
+
+message GetAllVisitingLogsResponse {
+    repeated VisitingLogs visitingLogs = 1;
+}
+
+message GetVisitingLogByIdRequest {
+    string visitingLogId = 1;
+}
+
+message GetVisitingLogByIdResponse {
+    string visitingLogId = 1;
+    string title = 2;
+    bool isArchived = 3;
+}
+message GetStudentMembershipsOfVisitingLogByIdRequest {
+    string visitingLogId = 1;
+}
+
+message GetStudentMembershipsOfVisitingLogByIdResponse {
+    repeated rtu_tc.rtu_attend.models.VisitingLogCompositionMembership studentMemberships = 1;
+}

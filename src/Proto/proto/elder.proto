@@ -1,0 +1,173 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.app;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/date.proto";
+import "google/protobuf/wrappers.proto";
+import "models.proto";
+
+service ElderService {
+    rpc GetAvailableVisitingLogs(GetAvailableVisitingLogsRequest) returns (AvailableVisitingLogsResponse);
+    rpc GetGroupComposition(GetGroupCompositionRequest) returns (GroupCompositionResponse);
+    rpc GetAvailableDisciplines(GetAvailableDisciplinesRequest) returns (AvailableDisciplinesResponse);
+    rpc GetSingleVisitingLog(GetSingleVisitingLogRequest) returns (SingleVisitingLogResponse);
+    rpc GetAvailableLessons(GetAvailableLessonsRequest) returns (AvailableLessonsResponse);
+    rpc GetAttendanceForLesson(GetAttendanceForLessonRequest) returns (AttendanceForLessonResponse);
+    rpc GetDataForLessonCreation(GetDataForLessonCreationRequest) returns (GetDataForLessonCreationResponse);
+
+    rpc UpdateAttendance(UpdateAttendanceRequest) returns (UpdateAttendanceResponse);
+    rpc CreateLesson(CreateLessonRequest) returns (CreateLessonResponse);
+}
+
+
+message GetAvailableVisitingLogsRequest {
+    string userId = 1; // временное поле, далее не будет поддерживаться, и будет браться из аутентификации
+}
+
+message AvailableVisitingLogsResponse {
+    repeated ElderVisitingLog logs = 1;
+}
+
+message ElderVisitingLog {
+    string title = 1;
+    int32 studentsCount = 2;
+    bool isActive = 3;
+    string id = 4;
+}
+
+message GetGroupCompositionRequest {
+    string visitingLogId = 1;
+}
+
+message GroupCompositionMembership {
+    string studentId = 1;
+    string firstname = 2;
+    string lastname = 3;
+    google.protobuf.StringValue middlename = 4;
+    StudentMembershipType membershipType = 5;
+    StudentMembershipRole membershipRole = 6;
+}
+
+message GroupCompositionResponse {
+    repeated GroupCompositionMembership membership = 1;
+}
+
+message GetAvailableDisciplinesRequest {
+    string visitingLogId = 1;
+}
+message AvailableDisciplinesResponse {
+    repeated AvailableDiscipline discipline = 1;
+}
+
+message AvailableDiscipline {
+    string id = 1;
+    string title = 2;
+}
+
+message GetSingleVisitingLogRequest {
+    string visitingLogId = 1;
+}
+
+message SingleVisitingLogResponse {
+    string visitingLogId = 1;
+    string title = 2;
+    bool isArchived = 3;
+    string semesterId = 4;
+    StudentMembershipRole membershipRole = 5;
+}
+
+message GetAvailableLessonsRequest {
+    string visitingLogId = 1;
+    google.type.Date date = 2;
+}
+
+message AvailableLessonsResponse {
+    repeated rtu_tc.rtu_attend.models.LessonView lessons = 1;
+}
+
+message GetAttendanceForLessonRequest {
+    string lessonId = 1;
+    string visitingLogId = 2;
+}   
+
+message AttendanceForLessonResponse {
+    repeated rtu_tc.rtu_attend.models.AttendanceForLesson students = 1;
+}
+
+message UpdateAttendanceRequest {
+    string userId = 1; // временное поле, далее не будет поддерживаться, и будет браться из аутентификации
+    string lessonId = 2;
+    repeated UpdateAttendanceRecord records = 3;
+}
+message UpdateAttendanceRecord {
+    string studentId = 1;
+    rtu_tc.rtu_attend.models.AttendType attendType = 2;
+}
+
+message UpdateAttendanceResponse {
+    UpdateAttendanceResult result = 2;
+}
+
+message GetDataForLessonCreationRequest {
+    string visitingLogId = 1;
+    google.protobuf.Timestamp lessonDate = 2;
+}
+
+message GetDataForLessonCreationResponse {
+    repeated Timeslot timeSlots = 1;
+    repeated AvailableDiscipline disciplines = 2;
+    repeated Lessontype lessonTypes = 3;
+}
+
+message Timeslot {
+    string timeslotId = 1;
+    int32 startMinutesUTC = 2; // количество минут от полуночи в UTC
+    int32 endMinutesUTC = 3; // количество минут от полуночи в UTC
+}
+
+message CreateLessonRequest {
+    string userId = 1; // временное поле, далее не будет поддерживаться, и будет браться из аутентификации
+    string visitingLogId = 2;
+    google.protobuf.Timestamp lessonDate = 3;
+    string timeSlotId = 4;
+    string disciplineId = 5;
+    string lessonTypeId = 6;
+    repeated UpdateAttendanceRecord records = 7;
+}
+
+message Lessontype {
+    string id = 1;
+    string lessonType = 2;
+}
+
+message CreateLessonResponse {
+    CreateLessonResult result = 1;
+}
+
+enum CreateLessonResult {
+    CREATE_LESSON_RESULT_UNKNOWN = 0;
+    CREATE_LESSON_RESULT_OK = 1;
+    CREATE_LESSON_RESULT_ERROR = 2;
+}
+
+enum UpdateAttendanceResult {
+    UPDATE_ATTENDANCE_RESULT_UNKNOWN = 0;
+    UPDATE_ATTENDANCE_RESULT_OK = 1; // Все обновления успешно применены
+    UPDATE_ATTENDANCE_RESULT_ERROR = 2; // Произошла ошибка, обновления не применены. Необходимо обновить список на занятие
+}
+
+enum StudentMembershipRole {
+    STUDENT_MEMBERSHIP_ROLE_UNKNOWN = 0;
+    STUDENT_MEMBERSHIP_ROLE_STUDENT = 1;
+    STUDENT_MEMBERSHIP_ROLE_ELDER = 2;
+    STUDENT_MEMBERSHIP_ROLE_VICE_ELDER = 3;
+}
+
+enum StudentMembershipType {
+    STUDENT_MEMBERSHIP_TYPE_UNKNOWN = 0;
+    STUDENT_MEMBERSHIP_TYPE_ACTIVE = 1;
+    STUDENT_MEMBERSHIP_TYPE_INACTIVE = 2;
+}
+
+

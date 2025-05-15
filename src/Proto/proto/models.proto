@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package rtu_tc.rtu_attend.models;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+message LessonView {
+    string id = 1;
+    repeated Auditorium auditorium = 2;
+    string disciplineTitle = 3;
+    string lessonType = 4;
+    google.protobuf.Timestamp start = 5;
+    google.protobuf.Timestamp end = 6;
+    oneof lessonCheckType {
+        PresentAttendance presentAttendance = 7;
+        NoAttendance noAttendance = 8;
+    }
+    repeated Human teachers = 9;
+    repeated Visitinglog visitingLogs = 10;
+}
+
+message Auditorium {
+    string id = 1;
+    string number = 2;
+    string building = 3;
+}
+
+message Human {
+    string id = 1;
+    string firstname = 2;
+    string lastname = 3;
+    google.protobuf.StringValue middlename = 4;
+}
+
+message Visitinglog {
+    string visitingLogId = 1;
+    string title = 2;
+    bool isArchived = 3;
+    string semesterId = 4;
+}
+
+
+message NoAttendance {
+}
+
+message PresentAttendance {
+    int32 numberOfAbsentees = 1;
+    LessonApproveStatus status = 2;
+}
+
+message AttendanceForLesson {
+    string studentId = 1;
+    string firstname = 2;
+    string lastname = 3;
+    google.protobuf.StringValue middlename = 6;
+    oneof attendType {
+        AttendType existingAttendType = 4;
+        google.protobuf.Empty noAttendType = 5;
+    }
+}
+
+message VisitingLogCompositionMembership {
+    string studentId = 1;
+    string firstname = 2;
+    string lastname = 3;
+    google.protobuf.StringValue middlename = 4;
+    StudentMembershipType membershipType = 5;
+    StudentMembershipRole membershipRole = 6;
+}
+
+enum LessonApproveStatus {
+    LESSON_APPROVE_STATUS_UNKNOWN = 0;
+    LESSON_APPROVE_STATUS_APPROVED_BY_TEACHER = 1; // Количество отсутвующих подтверждено преподавателем
+    LESSON_APPROVE_STATUS_NOT_APPROVED_BY_TEACHER = 2; // Количество отсутвующих не подтверждено преподавателем
+}
+
+enum AttendType {
+    ATTEND_TYPE_UNKNOWN = 0;
+    ATTEND_TYPE_ABSENT = 1; // Отсутствует
+    ATTEND_TYPE_EXCUSED_ABSENCE = 2; // Отсутствует по уважительной причине
+    ATTEND_TYPE_PRESENT = 3; // Присутствует на занятии
+}
+
+enum StudentMembershipRole {
+    STUDENT_MEMBERSHIP_ROLE_UNKNOWN = 0;
+    STUDENT_MEMBERSHIP_ROLE_STUDENT = 1;
+    STUDENT_MEMBERSHIP_ROLE_ELDER = 2;
+    STUDENT_MEMBERSHIP_ROLE_VICE_ELDER = 3;
+}
+
+enum StudentMembershipType {
+    STUDENT_MEMBERSHIP_TYPE_UNKNOWN = 0;
+    STUDENT_MEMBERSHIP_TYPE_ACTIVE = 1;
+    STUDENT_MEMBERSHIP_TYPE_INACTIVE = 2;
+}

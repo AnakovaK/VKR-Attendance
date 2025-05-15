@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  rtu-attend-api:
+    environment:
+      - ConnectionStrings__AttendPostgresDatabase=User ID=my_admin;Password=password;Server=attend_db;Port=5432;Database=attend_db;
+    depends_on:
+      - "attend_db"
+    ports:
+      - "8088:80"
+    build:
+      context: ${BACKEND_CONTEXT:-.}
+      dockerfile: src/API/Dockerfile
+
+  attend_db:
+    image: postgres:15
+    environment:
+        - POSTGRES_USER=my_admin
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_DB=attend_db
+    ports:
+        - "5433:5432"
+    restart: always
+    volumes:
+        - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:

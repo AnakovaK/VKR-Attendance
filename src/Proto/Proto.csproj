@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Remove="proto\admin.proto" />
+        <None Remove="proto\elder.proto" />
+        <None Remove="proto\student.proto" />
+        <None Remove="proto\tandem\tandem.proto" />
+        <None Remove="proto\teacher.proto" />
+        <None Remove="proto\user.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.24.2" />
+        <PackageReference Include="Grpc.AspNetCore.Server" Version="2.56.0" />
+        <PackageReference Include="Grpc.Net.ClientFactory" Version="2.56.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.57.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf ProtoRoot="proto" Include="proto\admin.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\student.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\elder.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\tandem\tandem.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\teacher.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\user.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\models.proto" GrpcServices="Both" />
+        <Protobuf ProtoRoot="proto" Include="proto\google\type\date.proto" GrpcServices="Both" />
+    </ItemGroup>
+
+</Project>

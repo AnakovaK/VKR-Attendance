@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  rtu-attend-api:
+    environment:
+      ConnectionStrings__AttendPostgresDatabase: ${API_POSTGRES_ConnectionString?required}
+      ConnectionStrings__BackgroundScheduleLink: ${API_RTU_SCHEDULE_API_BASE_ADDRESS?required}
+      ConnectionStrings__TandemGrpcEndpoint: ${API_TANDEM_GRPC_ENDPOINT?required}
+      ConnectionStrings__RedisCache: rtu-attend-api-redis:6379,password=${API_REDIS_CACHE_PASSWORD?required}
+      BackgroundScheduleMode: '0 0 5 * * ?'
+    networks:
+      rtu-attend-net: null
+      rtu-attend-api-redis-net: null
+    logging:
+      driver: json-file
+      options:
+        max-file: "10"
+        max-size: 200k
+    deploy:
+      resources:
+        limits:
+          memory: 1500M
+      update_config:
+        failure_action: rollback
+        order: start-first
+  rtu-attend-api-redis:
+    image: redis:7
+    command: redis-server --requirepass ${API_REDIS_CACHE_PASSWORD?required}
+    networks:
+      rtu-attend-api-redis-net: null
+    logging:
+      driver: json-file
+      options:
+        max-file: "10"
+        max-size: 200k
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+
+networks:
+  rtu-attend-net:
+  rtu-attend-api-redis-net:
